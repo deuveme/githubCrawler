@@ -42,4 +42,9 @@ All the source code of the project.
   Once run, the crawler will generate a JSON with all the URLs results.
 
 ### Folder ./test/ ###
-All the unit test to test the project. If you want to execute all the test: `python test_crawler.py`
+All the unit test to test the project. There are the following folders:
+  - ./test/html: All the mock HTML to test the project.
+  - ./test/json: All the mock JSON to test the project.
+  - ./test/test: All the tests implemented. 
+
+If you want to execute all the test: `python ./test/test/test_crawler.py`
