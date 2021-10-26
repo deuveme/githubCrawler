@@ -1,0 +1,12 @@
+{
+  "keywords": [
+    "Python",
+    "Java",
+    "Jira"
+  ],
+  "proxies": [
+    "71.237.233.224:8118",
+    "136.228.141.154:80"
+  ],
+  "type": "Repositories"
+}
