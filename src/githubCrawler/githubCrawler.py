@@ -2,6 +2,7 @@ import json
 import sys
 import requests
 import random
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from bs4 import BeautifulSoup
 
 # Types available in this Github Crawler
@@ -45,9 +46,7 @@ class GithubCrawler:
             raise self.TypeNotValid
 
         self.keywords = inputJSON['keywords']
-        self.proxies = list(map(lambda proxy: {
-            "http": 'http://' + proxy,
-            "https": 'https://' + proxy}, inputJSON['proxies']))
+        self.proxies = [{"http": 'http://' + proxy, "https": 'https://' + proxy} for proxy in inputJSON['proxies']]
         self.type = inputJSON['type']
         self.totalAttempts = attempts
         self.print_info = print_info
@@ -119,7 +118,7 @@ class GithubCrawler:
         attempts = 0
         while True:
             try:
-                languages = BeautifulSoup(self.downloadHTML(link), 'html.parser').\
+                languages = BeautifulSoup(self.downloadHTML(link), 'html.parser'). \
                     find_all("li", {"class": CLASS_TO_SEARCH['Stats']})
                 if len(languages) > 0:
                     for language in languages:
@@ -149,6 +148,8 @@ class GithubCrawler:
         Output: Info of the repository.
         """
 
+        if self.print_info:
+            print("Creating link to repository: " + GITHUB_URL + link)
         return [
             {"url": GITHUB_URL + link,
              "extra": {
@@ -164,6 +165,7 @@ class GithubCrawler:
             link: valid URL.
         Output: HTML text of the page.
         """
+
         return requests.get(link, proxies=self.proxies[random.randint(0, len(self.proxies) - 1)]).text
 
     def getURLs(self, html):
@@ -178,13 +180,28 @@ class GithubCrawler:
         soup = BeautifulSoup(html, 'html.parser')
         soupFound = soup.find_all("a", {"class": CLASS_TO_SEARCH[self.type]})
         if len(soupFound) != 0:
-            for i in range(0, len(soupFound)):
-                if soupFound[i].get('href'):
-                    result += self.getRepositoryInfoWithExtra(soupFound[i].get('href')) \
-                        if self.type == 'Repositories' \
-                        else [{"url": GITHUB_URL + soupFound[i].get('href')}]
-                else:
-                    raise self.DataNotFoundException
+            if self.type == 'Repositories':
+                with ThreadPoolExecutor() as executor:
+                    canContinue = True
+                    fase = []
+                    for i in range(0, len(soupFound)):
+                        if canContinue:
+                            if soupFound[i].get('href'):
+                                fase.append(executor.submit(self.getRepositoryInfoWithExtra, soupFound[i].get('href')))
+                            else:
+                                canContinue = False
+                        else:
+                            break
+                    if not canContinue:
+                        raise self.DataNotFoundException
+                    else:
+                        result = [f.result()[0] for f in as_completed(fase)]
+            else:
+                for i in range(0, len(soupFound)):
+                    if soupFound[i].get('href'):
+                        result += [{"url": GITHUB_URL + soupFound[i].get('href')}]
+                    else:
+                        raise self.DataNotFoundException
         else:
             if not (soup.find("div", {"class": CLASS_TO_SEARCH['CheckIfThereIsResultIssue']})
                     if self.type == 'Issues'
@@ -200,6 +217,7 @@ class GithubCrawler:
 
         Output: Valid URL (String).
         """
+
         if len(self.keywords) > 1:
             return GITHUB_SEARCH_URL + "".join([str(_) + '+' for _ in self.keywords])[:-1] + '&type=' + self.type
         else:

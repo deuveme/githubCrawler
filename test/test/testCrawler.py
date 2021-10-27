@@ -69,26 +69,28 @@ class TestCrawler(TestCase):
 
         response = GithubCrawler('../json/python_java_repositories.json').run()
 
-        self.assertEqual(response, [{'url': 'https://github.com/qiyuangong/leetcode',
-                                     'extra': {'owner': 'qiyuangong', 'language_stats': 'Not data about languages'}},
-                                    {'url': 'https://github.com/itwanger/JavaBooks',
-                                     'extra': {'owner': 'itwanger', 'language_stats': 'Not data about languages'}},
-                                    {'url': 'https://github.com/natural/java2python',
-                                     'extra': {'owner': 'natural', 'language_stats': 'Not data about languages'}},
-                                    {'url': 'https://github.com/kivy/pyjnius',
-                                     'extra': {'owner': 'kivy', 'language_stats': 'Not data about languages'}},
-                                    {'url': 'https://github.com/yusugomori/DeepLearning',
-                                     'extra': {'owner': 'yusugomori', 'language_stats': 'Not data about languages'}},
-                                    {'url': 'https://github.com/ninia/jep',
-                                     'extra': {'owner': 'ninia', 'language_stats': 'Not data about languages'}},
-                                    {'url': 'https://github.com/OGRECave/ogre',
-                                     'extra': {'owner': 'OGRECave', 'language_stats': 'Not data about languages'}},
-                                    {'url': 'https://github.com/c2nes/javalang',
-                                     'extra': {'owner': 'c2nes', 'language_stats': 'Not data about languages'}},
-                                    {'url': 'https://github.com/bytedeco/javacpp-presets',
-                                     'extra': {'owner': 'bytedeco', 'language_stats': 'Not data about languages'}},
-                                    {'url': 'https://github.com/RyanFehr/HackerRank',
-                                     'extra': {'owner': 'RyanFehr', 'language_stats': 'Not data about languages'}}])
+        expectedResponse = [{'url': 'https://github.com/qiyuangong/leetcode',
+                             'extra': {'owner': 'qiyuangong', 'language_stats': 'Not data about languages'}},
+                            {'url': 'https://github.com/itwanger/JavaBooks',
+                             'extra': {'owner': 'itwanger', 'language_stats': 'Not data about languages'}},
+                            {'url': 'https://github.com/natural/java2python',
+                             'extra': {'owner': 'natural', 'language_stats': 'Not data about languages'}},
+                            {'url': 'https://github.com/kivy/pyjnius',
+                             'extra': {'owner': 'kivy', 'language_stats': 'Not data about languages'}},
+                            {'url': 'https://github.com/yusugomori/DeepLearning',
+                             'extra': {'owner': 'yusugomori', 'language_stats': 'Not data about languages'}},
+                            {'url': 'https://github.com/ninia/jep',
+                             'extra': {'owner': 'ninia', 'language_stats': 'Not data about languages'}},
+                            {'url': 'https://github.com/OGRECave/ogre',
+                            'extra': {'owner': 'OGRECave', 'language_stats': 'Not data about languages'}},
+                            {'url': 'https://github.com/c2nes/javalang',
+                            'extra': {'owner': 'c2nes', 'language_stats': 'Not data about languages'}},
+                            {'url': 'https://github.com/bytedeco/javacpp-presets',
+                            'extra': {'owner': 'bytedeco', 'language_stats': 'Not data about languages'}},
+                            {'url': 'https://github.com/RyanFehr/HackerRank',
+                            'extra': {'owner': 'RyanFehr', 'language_stats': 'Not data about languages'}}]
+
+        self.assertEqual(all(url in response for url in expectedResponse), True)
 
     @mock.patch.object(GithubCrawler, "downloadHTML")
     def testRepositoriesBadURL(self, mock_get):
